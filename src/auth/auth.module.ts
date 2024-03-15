@@ -8,6 +8,8 @@ import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from './jwt.strategy';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { RefreshJwtAuthGuard } from './refresh-jwt-auth.guard';
+import { RefreshTokenStrategy } from './refreshToken.strategy';
 
 @Module({
   imports: [
@@ -19,13 +21,13 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
       useFactory: (configService: ConfigService) => ({
         secret: configService.get('JWT_SECRET'),
         signOptions: {
-          expiresIn: 3600, // 3600 s =  1 hour
+          expiresIn: 300, // 300 s =  5 min
         },
       }),
     }),
     TypeOrmModule.forFeature([User]),
   ],
-  providers: [AuthService, UsersRepository, JwtStrategy],
+  providers: [AuthService, UsersRepository, JwtStrategy, RefreshTokenStrategy],
   controllers: [AuthController],
   exports: [JwtStrategy, PassportModule],
 })
