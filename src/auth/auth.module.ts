@@ -8,7 +8,6 @@ import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from './jwt.strategy';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { RefreshJwtAuthGuard } from './refresh-jwt-auth.guard';
 import { RefreshTokenStrategy } from './refreshToken.strategy';
 
 @Module({
