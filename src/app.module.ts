@@ -6,6 +6,7 @@ import { AuthModule } from './auth/auth.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { configValidationSchema } from './config.schema';
 import { OpponentsModule } from './opponents/opponents.module';
+import { PrefixNamingStrategy } from './common/strategies/entity-naming.strategy';
 
 @Module({
   imports: [
@@ -25,6 +26,9 @@ import { OpponentsModule } from './opponents/opponents.module';
         database: configService.get('DB_DATABASE'),
         autoLoadEntities: true,
         synchronize: true,
+        namingStrategy: new PrefixNamingStrategy(
+          configService.get('DB_PREFIX'),
+        ),
       }),
     }),
     AuthModule,
