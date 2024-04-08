@@ -22,19 +22,21 @@ export class UsersRepository extends Repository<User> {
   }
 
   async createUser(authCredentialsDto: AuthCredentialsDto): Promise<void> {
-    const { username, password } = authCredentialsDto;
+    const { email, password } = authCredentialsDto;
     const salt = await bcrypt.genSalt();
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    const user = this.create({ username, password: hashedPassword });
+    const user = this.create({ email, password: hashedPassword });
     try {
       await this.save(user);
     } catch (error) {
       if (error.code === UserErrors.DUPLICATE_USERNAME) {
-        this.logger.error(`Username '${username}' already exists`);
-        throw new ConflictException('Username already exists');
+        this.logger.error(
+          `The e-mail:'${email}' has been used to register before`,
+        );
+        throw new ConflictException('E-mail already used');
       } else {
-        this.logger.error(`Failed to create user '${username}'`, error.stack);
+        this.logger.error(`Failed to create user '${email}'`, error.stack);
         throw new InternalServerErrorException();
       }
     }

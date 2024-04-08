@@ -22,11 +22,11 @@ export class AuthService {
   async signIn(
     authCredentialsDto: AuthCredentialsDto,
   ): Promise<{ accessToken: string; refreshToken: string }> {
-    const { username, password } = authCredentialsDto;
-    const user = await this.usersRepository.findOne({ where: { username } });
+    const { email, password } = authCredentialsDto;
+    const user = await this.usersRepository.findOne({ where: { email } });
 
     if (user && (await bcrypt.compare(password, user.password))) {
-      const payload: JwtPayload = { username };
+      const payload: JwtPayload = { email };
       const accessToken = this.jwtService.sign(payload);
       const refreshToken = this.jwtService.sign(payload, { expiresIn: '7d' });
       return { accessToken, refreshToken };
@@ -36,7 +36,7 @@ export class AuthService {
   }
 
   async refreshToken(user: User): Promise<{ accessToken: string }> {
-    const payload: JwtPayload = { username: user.username };
+    const payload: JwtPayload = { email: user.email };
     const accessToken = this.jwtService.sign(payload);
     return { accessToken };
   }
