@@ -20,7 +20,7 @@ import { RefreshTokenStrategy } from './refreshToken.strategy';
       useFactory: (configService: ConfigService) => ({
         secret: configService.get('JWT_SECRET'),
         signOptions: {
-          expiresIn: 300, // 300 s =  5 min
+          expiresIn: configService.get('JWT_EXPIRATION_TIME'),
         },
       }),
     }),

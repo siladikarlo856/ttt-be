@@ -1,12 +1,10 @@
 import { Exclude } from 'class-transformer';
 import { User } from 'src/auth/user.entity';
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, ManyToOne } from 'typeorm';
+import { BaseEntity } from 'src/common/entities/base.entity';
 
 @Entity('opponents')
-export class Opponent {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
-
+export class Opponent extends BaseEntity {
   @Column()
   firstName: string;
 

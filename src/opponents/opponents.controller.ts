@@ -21,6 +21,7 @@ export class OpponentsController {
 
   @Get()
   getOpponents(@GetUser() user: User): Promise<Opponent[]> {
+    console.log('getOpponents', user);
     return this.opponentsService.getOpponents(user);
   }
 
@@ -29,7 +30,6 @@ export class OpponentsController {
     @Param('id') id: string,
     @GetUser() user: User,
   ): Promise<Opponent> {
-    console.log('id', id);
     return this.opponentsService.getOpponentById(id, user);
   }
 

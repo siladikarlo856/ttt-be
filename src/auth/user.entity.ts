@@ -1,11 +1,9 @@
 import { Opponent } from 'src/opponents/opponent.entity';
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, OneToMany } from 'typeorm';
+import { BaseEntity } from 'src/common/entities/base.entity';
 
 @Entity('users')
-export class User {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
-
+export class User extends BaseEntity {
   @Column({ unique: true })
   email: string;
 
