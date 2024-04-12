@@ -12,6 +12,7 @@ import { AuthService } from './auth.service';
 import { GetUser } from './get-user.decorator';
 import { User } from './user.entity';
 import { RefreshJwtAuthGuard } from './refresh-jwt-auth.guard';
+import { SignUpDto } from './dto/sign-up.dto';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -21,8 +22,8 @@ export class AuthController {
   @Post('/signup')
   @ApiOperation({ summary: 'User sign up' })
   @ApiResponse({ status: 201, description: 'User successfully signed up' })
-  signUp(@Body() authCredentialsDto: AuthCredentialsDto): Promise<void> {
-    return this.authService.signUp(authCredentialsDto);
+  signUp(@Body() signUpDto: SignUpDto): Promise<void> {
+    return this.authService.signUp(signUpDto);
   }
 
   @Post('/signin')

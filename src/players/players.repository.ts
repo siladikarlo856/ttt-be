@@ -21,7 +21,7 @@ export class PlayersRepository extends Repository<Player> {
     const player = this.create({
       firstName,
       lastName,
-      user,
+      createdBy: user,
     });
 
     await this.save(player);

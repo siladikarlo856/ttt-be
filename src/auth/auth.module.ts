@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { UsersRepository } from './users.repository';
@@ -9,6 +9,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from './jwt.strategy';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { RefreshTokenStrategy } from './refreshToken.strategy';
+import { PlayersModule } from 'src/players/players.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { RefreshTokenStrategy } from './refreshToken.strategy';
       }),
     }),
     TypeOrmModule.forFeature([User]),
+    forwardRef(() => PlayersModule),
   ],
   providers: [AuthService, UsersRepository, JwtStrategy, RefreshTokenStrategy],
   controllers: [AuthController],

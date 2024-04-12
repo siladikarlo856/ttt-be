@@ -18,16 +18,19 @@ export class PlayersService {
   }
 
   async findAll(user: User): Promise<Player[]> {
-    return this.playersRepository.find({ where: { user } });
+    return this.playersRepository.find({
+      where: { createdBy: user },
+      relations: ['user'],
+    });
   }
 
   async findOne(id: string, user: User): Promise<Player> {
     const found = await this.playersRepository.findOne({
-      where: { id, user },
+      where: { id, createdBy: user },
     });
 
     if (!found) {
-      throw new NotFoundException(`Opponent with id: '${id}' not found`);
+      throw new NotFoundException(`Player with id: '${id}' not found`);
     }
 
     return found;
@@ -48,7 +51,10 @@ export class PlayersService {
   }
 
   async remove(id: string, user: User): Promise<void> {
-    const result = await this.playersRepository.softDelete({ id, user });
+    const result = await this.playersRepository.softDelete({
+      id,
+      createdBy: user,
+    });
 
     if (result.affected === 0) {
       throw new NotFoundException(`Opponent with id: '${id}' not found`);

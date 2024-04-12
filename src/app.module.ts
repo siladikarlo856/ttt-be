@@ -30,6 +30,7 @@ import { PlayersModule } from './players/players.module';
         namingStrategy: new PrefixNamingStrategy(
           configService.get('DB_PREFIX'),
         ),
+        // logging: true, // Uncomment to see the SQL queries
       }),
     }),
     AuthModule,
