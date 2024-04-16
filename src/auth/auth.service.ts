@@ -21,7 +21,7 @@ enum UserErrors {
 
 @Injectable()
 export class AuthService {
-  private logger = new Logger('UsersRepository', { timestamp: true });
+  private logger = new Logger('AuthService', { timestamp: true });
 
   constructor(
     @InjectRepository(UsersRepository)

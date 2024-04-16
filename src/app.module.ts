@@ -8,6 +8,7 @@ import { configValidationSchema } from './config.schema';
 import { OpponentsModule } from './opponents/opponents.module';
 import { PrefixNamingStrategy } from './common/strategies/entity-naming.strategy';
 import { PlayersModule } from './players/players.module';
+import { ResultsModule } from './results/results.module';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { PlayersModule } from './players/players.module';
     AuthModule,
     OpponentsModule,
     PlayersModule,
+    ResultsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
