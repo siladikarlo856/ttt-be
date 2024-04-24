@@ -1,5 +1,6 @@
 import { IsNotEmpty } from 'class-validator';
-import { User } from 'src/auth/user.entity';
+import { Match } from 'src/matches/entities/match.entity';
+import { Player } from 'src/players/entities/player.entity';
 
 export class CreateResultDto {
   @IsNotEmpty()
@@ -9,5 +10,8 @@ export class CreateResultDto {
   awayPlayerSetsWon: number;
 
   @IsNotEmpty()
-  winner: User;
+  winner: Player;
+
+  @IsNotEmpty()
+  match: Match;
 }

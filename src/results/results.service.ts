@@ -31,7 +31,7 @@ export class ResultsService {
     const found = await this.resultsRepository.findOne({ where: { id } });
 
     if (!found) {
-      throw new NotFoundException(`Player with id: '${id}' not found`);
+      throw new NotFoundException(`Result with id: '${id}' not found`);
     }
 
     return found;
@@ -55,5 +55,12 @@ export class ResultsService {
     if (result.affected === 0) {
       throw new NotFoundException(`Result with id: '${id}' not found`);
     }
+  }
+
+  async findResultByMatchId(matchId: string): Promise<Result> {
+    this.logger.debug(`Retrieving results for match with id: ${matchId}`);
+    return this.resultsRepository.findOne({
+      where: { match: { id: matchId } },
+    });
   }
 }

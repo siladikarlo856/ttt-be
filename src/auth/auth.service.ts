@@ -68,10 +68,13 @@ export class AuthService {
     authCredentialsDto: AuthCredentialsDto,
   ): Promise<{ accessToken: string; refreshToken: string }> {
     const { email, password } = authCredentialsDto;
-    const user = await this.usersRepository.findOne({ where: { email } });
+    const user = await this.usersRepository.findOne({
+      where: { email },
+      relations: ['player'],
+    });
 
     if (user && (await bcrypt.compare(password, user.password))) {
-      const payload: JwtPayload = { email };
+      const payload: JwtPayload = { email, playerId: user.player.id };
       const accessToken = this.jwtService.sign(payload);
       const refreshToken = this.jwtService.sign(payload, { expiresIn: '7d' });
       return { accessToken, refreshToken };
@@ -81,7 +84,7 @@ export class AuthService {
   }
 
   async refreshToken(user: User): Promise<{ accessToken: string }> {
-    const payload: JwtPayload = { email: user.email };
+    const payload: JwtPayload = { email: user.email, playerId: user.player.id };
     const accessToken = this.jwtService.sign(payload);
     return { accessToken };
   }

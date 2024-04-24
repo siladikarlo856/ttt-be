@@ -9,6 +9,7 @@ import { OpponentsModule } from './opponents/opponents.module';
 import { PrefixNamingStrategy } from './common/strategies/entity-naming.strategy';
 import { PlayersModule } from './players/players.module';
 import { ResultsModule } from './results/results.module';
+import { MatchesModule } from './matches/matches.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { ResultsModule } from './results/results.module';
     OpponentsModule,
     PlayersModule,
     ResultsModule,
+    MatchesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

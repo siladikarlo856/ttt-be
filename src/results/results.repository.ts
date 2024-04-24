@@ -12,7 +12,8 @@ export class ResultsRepository extends Repository<Result> {
   }
 
   async createResult(createResultDto: CreateResultDto): Promise<Result> {
-    const { homePlayerSetsWon, awayPlayerSetsWon, winner } = createResultDto;
+    const { homePlayerSetsWon, awayPlayerSetsWon, winner, match } =
+      createResultDto;
 
     this.logger.debug(
       `Creating a new db record for result: ${winner.id} => ${homePlayerSetsWon} - ${awayPlayerSetsWon}`,
@@ -21,6 +22,7 @@ export class ResultsRepository extends Repository<Result> {
       homePlayerSetsWon,
       awayPlayerSetsWon,
       winner,
+      match,
     });
 
     await this.save(result);
