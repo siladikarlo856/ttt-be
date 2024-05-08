@@ -1,6 +1,30 @@
-version: '3'
-
+version: '3.8'
 services:
+  api:
+    build:
+      dockerfile: Dockerfile
+      context: .
+    container_name: template-api
+    depends_on:
+      - postgres
+    environment:
+      STAGE: production
+      PORT: ${PORT}
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_DATABASE: ${DB_DATABASE}
+      DB_PREFIX: ${DB_PREFIX}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRATION_TIME: ${JWT_EXPIRATION_TIME}
+    env_file:
+      - .env
+    ports:
+      - '3000:3000'
+    networks:
+      - ttt-network
+
   postgres:
     container_name: template-postgres
     image: postgres:13
@@ -8,16 +32,18 @@ services:
     ports:
       - '5432:5432'
     environment:
-      POSTGRES_USER: template-dev-user
-      POSTGRES_PASSWORD: template-dev-pass
-      POSTGRES_DB: template-db
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_DATABASE}
+    env_file:
+      - .env
     volumes:
       - 'postgres-data:/var/lib/postgresql/data'
     networks:
-      - template-net
+      - ttt-network
 
 networks:
-  template-net:
+  ttt-network:
     external: false
     driver: bridge
 

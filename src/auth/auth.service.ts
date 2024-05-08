@@ -67,6 +67,9 @@ export class AuthService {
   async signIn(
     authCredentialsDto: AuthCredentialsDto,
   ): Promise<{ accessToken: string; refreshToken: string }> {
+    this.logger.debug(
+      `User is trying to sign in with these credentials: ${JSON.stringify(authCredentialsDto)}`,
+    );
     const { email, password } = authCredentialsDto;
     const user = await this.usersRepository.findOne({
       where: { email },
