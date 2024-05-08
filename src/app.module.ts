@@ -5,6 +5,11 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './auth/auth.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { configValidationSchema } from './config.schema';
+import { OpponentsModule } from './opponents/opponents.module';
+import { PrefixNamingStrategy } from './common/strategies/entity-naming.strategy';
+import { PlayersModule } from './players/players.module';
+import { ResultsModule } from './results/results.module';
+import { MatchesModule } from './matches/matches.module';
 
 @Module({
   imports: [
@@ -24,9 +29,17 @@ import { configValidationSchema } from './config.schema';
         database: configService.get('DB_DATABASE'),
         autoLoadEntities: true,
         synchronize: true,
+        namingStrategy: new PrefixNamingStrategy(
+          configService.get('DB_PREFIX'),
+        ),
+        // logging: true, // Uncomment to see the SQL queries
       }),
     }),
     AuthModule,
+    OpponentsModule,
+    PlayersModule,
+    ResultsModule,
+    MatchesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

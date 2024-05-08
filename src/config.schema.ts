@@ -9,5 +9,5 @@ export const configValidationSchema = Joi.object({
   DB_PASSWORD: Joi.string().required(),
   DB_DATABASE: Joi.string().required(),
   JWT_SECRET: Joi.string().required(),
-  // JWT_EXPIRATION_TIME: Joi.string().required(),
+  JWT_EXPIRATION_TIME: Joi.number().default(300), // 300s = 5 min
 });

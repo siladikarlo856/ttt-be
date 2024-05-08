@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { UsersRepository } from './users.repository';
@@ -8,8 +8,8 @@ import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from './jwt.strategy';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { RefreshJwtAuthGuard } from './refresh-jwt-auth.guard';
 import { RefreshTokenStrategy } from './refreshToken.strategy';
+import { PlayersModule } from 'src/players/players.module';
 
 @Module({
   imports: [
@@ -21,11 +21,12 @@ import { RefreshTokenStrategy } from './refreshToken.strategy';
       useFactory: (configService: ConfigService) => ({
         secret: configService.get('JWT_SECRET'),
         signOptions: {
-          expiresIn: 300, // 300 s =  5 min
+          expiresIn: configService.get('JWT_EXPIRATION_TIME'),
         },
       }),
     }),
     TypeOrmModule.forFeature([User]),
+    forwardRef(() => PlayersModule),
   ],
   providers: [AuthService, UsersRepository, JwtStrategy, RefreshTokenStrategy],
   controllers: [AuthController],
