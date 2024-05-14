@@ -51,6 +51,7 @@ export class AuthService {
       const createdUser = await this.usersRepository.save(user);
       player.createdBy = createdUser;
       await this.playersService.update(player.id, player, null);
+      this.logger.debug(`User '${email}' successfully created`);
     } catch (error) {
       if (error.code === UserErrors.DUPLICATE_USERNAME) {
         this.logger.error(
@@ -87,7 +88,15 @@ export class AuthService {
   }
 
   async refreshToken(user: User): Promise<{ accessToken: string }> {
-    const payload: JwtPayload = { email: user.email, playerId: user.player.id };
+    const userFromDb = await this.usersRepository.findOne({
+      where: { id: user.id },
+      relations: ['player'],
+    });
+
+    const payload: JwtPayload = {
+      email: userFromDb.email,
+      playerId: userFromDb.player.id,
+    };
     const accessToken = this.jwtService.sign(payload);
     return { accessToken };
   }

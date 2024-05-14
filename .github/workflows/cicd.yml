@@ -1,0 +1,100 @@
+name: TTT API CICD
+
+on:
+  push:
+    branches: ['master']
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Build the Docker image
+        run: docker build --tag ttt-api:latest .
+
+      - name: Login to ECR
+        id: ecr-login
+        uses: jwalton/gh-ecr-login@v3
+        with:
+          access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          region: ${{ vars.AWS_REGION }}
+
+      - name: Push to ECR
+        id: ecr-push
+        uses: jwalton/gh-ecr-push@v2
+        with:
+          access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          region: ${{ vars.AWS_REGION }}
+          image: ttt-api:latest
+
+  production:
+    needs: build
+    name: Deploy to production
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ vars.AWS_REGION }}
+      - name: SSH into EC2 Instances
+        env:
+          REGISTRY: ${{ secrets.AWS_ECR_REGISTRY }}
+          REPOSITORY: ${{ secrets.AWS_ECR_REPOSITORY }}
+          ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          REGION: ${{ vars.AWS_REGION }}
+        run: |
+          echo "Starting Deploy"
+          instance_ids=$(aws ec2 describe-instances --filters "Name=tag:Service,Values=ttt-api-service" "Name=instance-state-name,Values=running" --query 'Reservations[*].Instances[*].[InstanceId]' --output text)
+          echo "Instance IDs: $instance_ids"
+          for instance in $instance_ids; do
+            instance_status=$(aws ec2 describe-instances --instance-ids $instance --query 'Reservations[*].Instances[*].State.Name' --output text)
+            echo "Instance Status: $instance_status"
+            
+            # Debug: Print the instance ID you are connecting to
+            echo "Connecting to instance: $instance"
+
+            echo "Creating an SSH key pair for $instance"
+            ssh-keygen -t rsa -f temp_key -N ""
+
+            echo "Copying SSH key to instance: $instance"
+            aws ec2-instance-connect send-ssh-public-key --instance-id ${instance} --instance-os-user ubuntu --ssh-public-key file://temp_key.pub
+
+            echo "Connecting to instance with ID: $instance"
+
+            # Use describe-instances to get the public DNS of the instance
+            instance_info=$(aws ec2 describe-instances --instance-ids $instance --query 'Reservations[0].Instances[0]')
+            public_dns=$(echo $instance_info | jq -r '.PublicDnsName')
+
+            # Check if the PublicDnsName is not null (i.e., the instance has a public DNS)
+            if [ ! -z "$public_dns" ] && [ "$public_dns" != "null" ]; then
+              echo "Public DNS of the instance: $public_dns"
+
+              # SSH into the instance using the public DNS
+              echo "Connecting to instance via SSH: $instance"
+              ssh -tt -o "IdentitiesOnly=yes" -o "StrictHostKeyChecking=no"  -i temp_key ubuntu@$public_dns \
+                "aws --profile default configure set aws_access_key_id \"$ACCESS_KEY_ID\"; \
+                aws --profile default configure set aws_secret_access_key \"$SECRET_ACCESS_KEY\"; \
+                aws --profile default configure set aws_default_region \"$REGION\"; \
+                aws ecr get-login-password --region $REGION | docker login --username AWS --password-stdin $REGISTRY; \
+                docker pull $REGISTRY/$REPOSITORY:latest; \
+                cd /home/ubuntu/ttt-api/docker/; \
+                env VERSION=production env REGISTRY=$REGISTRY env REPOSITORY=$REPOSITORY docker-compose up -d;"
+            else
+              echo "No public DNS found for the instance with ID: $instance"
+              exit 1000
+            fi
+
+            rm temp_key
+            rm temp_key.pub
+          done
+      - name: Cleanup history
+        run: history -c && history -w

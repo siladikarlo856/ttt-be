@@ -5,6 +5,7 @@ import {
   UseGuards,
   HttpCode,
   HttpStatus,
+  Logger,
 } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuthCredentialsDto } from './dto/auth-credentials.dto';
@@ -17,6 +18,8 @@ import { SignUpDto } from './dto/sign-up.dto';
 @ApiTags('auth')
 @Controller('auth')
 export class AuthController {
+  private logger = new Logger('AuthController', { timestamp: true });
+
   constructor(private authService: AuthService) {}
 
   @Post('/signup')
@@ -32,6 +35,9 @@ export class AuthController {
   signIn(
     @Body() authCredentialsDto: AuthCredentialsDto,
   ): Promise<{ accessToken: string; refreshToken: string }> {
+    this.logger.log(
+      `User trying to sign in: email= '${authCredentialsDto.email}' pass= '${authCredentialsDto.password}'`,
+    );
     return this.authService.signIn(authCredentialsDto);
   }
 
@@ -39,6 +45,7 @@ export class AuthController {
   @Post('/refresh')
   @ApiOperation({ summary: 'Request a new access token using a refresh token' })
   async refresh(@GetUser() user: User) {
+    this.logger.log(`User trying to refresh token: ${user.id}`);
     return this.authService.refreshToken(user);
   }
 }
