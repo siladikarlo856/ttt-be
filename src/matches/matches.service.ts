@@ -68,7 +68,9 @@ export class MatchesService {
       relations: ['result', 'homePlayer', 'awayPlayer'],
     });
 
-    return matches.map((match): MatchDto => this.mapMatchToMatchDto(match));
+    return matches
+      .sort((a, b) => b.date.getTime() - a.date.getTime())
+      .map((match): MatchDto => this.mapMatchToMatchDto(match));
   }
 
   async findOneMatch(id: string): Promise<MatchDto> {
