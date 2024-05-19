@@ -14,6 +14,7 @@ import { JwtPayload } from './jwt-payload.interface';
 import { User } from './user.entity';
 import { SignUpDto } from './dto/sign-up.dto';
 import { PlayersService } from 'src/players/players.service';
+import { UserProfile } from './dto/user-profile.dto';
 
 enum UserErrors {
   DUPLICATE_USERNAME = '23505',
@@ -74,11 +75,10 @@ export class AuthService {
     const { email, password } = authCredentialsDto;
     const user = await this.usersRepository.findOne({
       where: { email },
-      relations: ['player'],
     });
 
     if (user && (await bcrypt.compare(password, user.password))) {
-      const payload: JwtPayload = { email, playerId: user.player.id };
+      const payload: JwtPayload = { email };
       const accessToken = this.jwtService.sign(payload);
       const refreshToken = this.jwtService.sign(payload, { expiresIn: '7d' });
       return { accessToken, refreshToken };
@@ -90,14 +90,26 @@ export class AuthService {
   async refreshToken(user: User): Promise<{ accessToken: string }> {
     const userFromDb = await this.usersRepository.findOne({
       where: { id: user.id },
-      relations: ['player'],
     });
 
     const payload: JwtPayload = {
       email: userFromDb.email,
-      playerId: userFromDb.player.id,
     };
     const accessToken = this.jwtService.sign(payload);
     return { accessToken };
+  }
+
+  async getMe(user: User): Promise<UserProfile> {
+    const userFromDb = await this.usersRepository.findOne({
+      where: { id: user.id },
+      relations: ['player'],
+    });
+
+    return {
+      playerId: userFromDb.player.id,
+      email: userFromDb.email,
+      firstName: userFromDb.player.firstName,
+      lastName: userFromDb.player.lastName,
+    };
   }
 }

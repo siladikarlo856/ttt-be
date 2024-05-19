@@ -6,6 +6,7 @@ import {
   HttpCode,
   HttpStatus,
   Logger,
+  Get,
 } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuthCredentialsDto } from './dto/auth-credentials.dto';
@@ -14,6 +15,8 @@ import { GetUser } from './get-user.decorator';
 import { User } from './user.entity';
 import { RefreshJwtAuthGuard } from './refresh-jwt-auth.guard';
 import { SignUpDto } from './dto/sign-up.dto';
+import { AuthGuard } from '@nestjs/passport';
+import { UserProfile } from './dto/user-profile.dto';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -47,5 +50,17 @@ export class AuthController {
   async refresh(@GetUser() user: User) {
     this.logger.log(`User trying to refresh token: ${user.id}`);
     return this.authService.refreshToken(user);
+  }
+
+  @UseGuards(AuthGuard())
+  @Get('/me')
+  @ApiOperation({ summary: 'Get user information' })
+  @ApiResponse({
+    status: 200,
+    description: 'User information successfully retrieved',
+  })
+  async getMe(@GetUser() user: User): Promise<UserProfile> {
+    this.logger.log(`User trying to get information: ${user?.email}`);
+    return this.authService.getMe(user);
   }
 }
