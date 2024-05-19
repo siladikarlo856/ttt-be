@@ -29,22 +29,26 @@ export class MatchesController {
   }
 
   @Get()
-  findAll() {
-    return this.matchesService.findAll();
+  findAll(@GetUser() user: User) {
+    return this.matchesService.findAll(user);
   }
 
   @Get(':id')
-  async findOne(@Param('id') id: string) {
-    return this.matchesService.findOne(id);
+  async findOne(@Param('id') id: string, @GetUser() user: User) {
+    return this.matchesService.findOne(id, user);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateMatchDto: UpdateMatchDto) {
-    return this.matchesService.update(id, updateMatchDto);
+  update(
+    @Param('id') id: string,
+    @Body() updateMatchDto: UpdateMatchDto,
+    @GetUser() user: User,
+  ) {
+    return this.matchesService.update(id, updateMatchDto, user);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.matchesService.remove(id);
+  remove(@Param('id') id: string, @GetUser() user: User) {
+    return this.matchesService.remove(id, user);
   }
 }

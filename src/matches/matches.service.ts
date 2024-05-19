@@ -48,6 +48,7 @@ export class MatchesService {
       new Date(date),
       homePlayer,
       awayPlayer,
+      user,
     );
 
     const winner =
@@ -63,8 +64,9 @@ export class MatchesService {
     return match;
   }
 
-  async findAll(): Promise<MatchDto[]> {
+  async findAll(user: User): Promise<MatchDto[]> {
     const matches = await this.matchesRepository.find({
+      where: { createdBy: user },
       relations: ['result', 'homePlayer', 'awayPlayer'],
     });
 
@@ -73,15 +75,15 @@ export class MatchesService {
       .map((match): MatchDto => this.mapMatchToMatchDto(match));
   }
 
-  async findOneMatch(id: string): Promise<MatchDto> {
-    const match = await this.findOne(id);
+  async findOneMatch(id: string, user: User): Promise<MatchDto> {
+    const match = await this.findOne(id, user);
 
     return this.mapMatchToMatchDto(match);
   }
 
-  async findOne(id: string): Promise<Match> {
+  async findOne(id: string, user: User): Promise<Match> {
     const found = await this.matchesRepository.findOne({
-      where: { id },
+      where: { id, createdBy: user },
       relations: ['result', 'homePlayer', 'awayPlayer'],
     });
 
@@ -96,8 +98,12 @@ export class MatchesService {
     return found;
   }
 
-  async update(id: string, updateMatchDto: UpdateMatchDto): Promise<MatchDto> {
-    const match = await this.findOne(id);
+  async update(
+    id: string,
+    updateMatchDto: UpdateMatchDto,
+    user: User,
+  ): Promise<MatchDto> {
+    const match = await this.findOne(id, user);
 
     Object.assign(match, updateMatchDto);
 
@@ -106,8 +112,11 @@ export class MatchesService {
     return this.mapMatchToMatchDto(match);
   }
 
-  async remove(id: string): Promise<void> {
-    const result = await this.matchesRepository.softDelete({ id });
+  async remove(id: string, user: User): Promise<void> {
+    const result = await this.matchesRepository.softDelete({
+      id,
+      createdBy: user,
+    });
 
     if (result.affected === 0) {
       this.logger.debug(`Match with id: '${id}' not found`);

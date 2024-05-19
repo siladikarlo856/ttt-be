@@ -1,15 +1,9 @@
 import { Exclude } from 'class-transformer';
+import { User } from 'src/auth/user.entity';
 import { BaseEntity } from 'src/common/entities/base.entity';
 import { Player } from 'src/players/entities/player.entity';
 import { Result } from 'src/results/entities/result.entity';
-import {
-  Column,
-  Entity,
-  ManyToOne,
-  OneToMany,
-  OneToOne,
-  RelationId,
-} from 'typeorm';
+import { Column, Entity, ManyToOne, OneToOne, RelationId } from 'typeorm';
 
 @Entity('matches')
 export class Match extends BaseEntity {
@@ -32,4 +26,8 @@ export class Match extends BaseEntity {
 
   @OneToOne(() => Result, (result) => result.match, { eager: false })
   result: Result;
+
+  @ManyToOne(() => User, (user) => user.players, { eager: false })
+  @Exclude({ toPlainOnly: true })
+  createdBy: User;
 }
