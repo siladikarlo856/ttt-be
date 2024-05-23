@@ -5,7 +5,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './auth/auth.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { configValidationSchema } from './config.schema';
-import { OpponentsModule } from './opponents/opponents.module';
 import { PrefixNamingStrategy } from './common/strategies/entity-naming.strategy';
 import { PlayersModule } from './players/players.module';
 import { ResultsModule } from './results/results.module';
@@ -36,7 +35,6 @@ import { MatchesModule } from './matches/matches.module';
       }),
     }),
     AuthModule,
-    OpponentsModule,
     PlayersModule,
     ResultsModule,
     MatchesModule,
