@@ -78,7 +78,7 @@ export class MatchesController {
 
   @ApiOperation({ summary: 'Delete a match' })
   @ApiParam({ name: 'id', example: '1', description: 'The id of the match' })
-  @ApiResponse({ status: 200, description: 'Match successfully deleted' })
+  @ApiResponse({ status: 204, description: 'Match successfully deleted' })
   @Delete(':id')
   remove(@Param('id') id: string, @GetUser() user: User) {
     return this.matchesService.remove(id, user);
