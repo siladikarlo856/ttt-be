@@ -19,9 +19,15 @@ async function bootstrap() {
     .setTitle('Table tennis tracker')
     .setDescription('The table tennis tracker API description')
     .setVersion('1.0')
+    .addBearerAuth()
+    .addSecurityRequirements('bearer')
     .build();
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('swagger', app, document);
+  SwaggerModule.setup('swagger', app, document, {
+    swaggerOptions: {
+      persistAuthorization: true,
+    },
+  });
 
   await app.listen(port);
 

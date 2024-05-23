@@ -8,7 +8,7 @@ import {
   Logger,
   Get,
 } from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuthCredentialsDto } from './dto/auth-credentials.dto';
 import { AuthService } from './auth.service';
 import { GetUser } from './get-user.decorator';
@@ -17,6 +17,7 @@ import { RefreshJwtAuthGuard } from './refresh-jwt-auth.guard';
 import { SignUpDto } from './dto/sign-up.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { UserProfile } from './dto/user-profile.dto';
+import { RefreshTokenDto } from './dto/refresh-token.dto';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -28,6 +29,7 @@ export class AuthController {
   @Post('/signup')
   @ApiOperation({ summary: 'User sign up' })
   @ApiResponse({ status: 201, description: 'User successfully signed up' })
+  @ApiBody({ type: SignUpDto })
   signUp(@Body() signUpDto: SignUpDto): Promise<void> {
     return this.authService.signUp(signUpDto);
   }
@@ -47,7 +49,12 @@ export class AuthController {
   @UseGuards(RefreshJwtAuthGuard)
   @Post('/refresh')
   @ApiOperation({ summary: 'Request a new access token using a refresh token' })
-  async refresh(@GetUser() user: User) {
+  @ApiResponse({
+    status: 201,
+    description: 'Access token successfully refreshed',
+  })
+  @ApiBody({ type: RefreshTokenDto })
+  async refresh(@GetUser() user: User): Promise<{ accessToken: string }> {
     this.logger.log(`User trying to refresh token: ${user.id}`);
     return this.authService.refreshToken(user);
   }
@@ -58,6 +65,7 @@ export class AuthController {
   @ApiResponse({
     status: 200,
     description: 'User information successfully retrieved',
+    type: UserProfile,
   })
   async getMe(@GetUser() user: User): Promise<UserProfile> {
     this.logger.log(`User trying to get information: ${user?.email}`);
