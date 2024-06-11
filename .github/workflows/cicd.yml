@@ -30,6 +30,9 @@ jobs:
           region: ${{ vars.AWS_REGION }}
           image: ttt-api:latest
 
+      - name: Remove Docker image
+        run: docker rmi ttt-api:latest
+
   production:
     needs: build
     name: Deploy to production
