@@ -23,6 +23,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { MatchDto } from './dto/match.dto';
+import { MatchIdResponse } from './dto/match-id-response.dto';
 
 @ApiTags('matches')
 @Controller('matches')
@@ -33,10 +34,17 @@ export class MatchesController {
   constructor(private readonly matchesService: MatchesService) {}
 
   @ApiOperation({ summary: 'Create a new match' })
-  @ApiResponse({ status: 201, description: 'Match successfully created' })
+  @ApiResponse({
+    status: 201,
+    description: 'Match successfully created',
+    type: MatchIdResponse,
+  })
   @ApiBody({ type: CreateMatchDto })
   @Post()
-  create(@Body() createMatchDto: CreateMatchDto, @GetUser() user: User) {
+  create(
+    @Body() createMatchDto: CreateMatchDto,
+    @GetUser() user: User,
+  ): Promise<MatchIdResponse> {
     return this.matchesService.create(createMatchDto, user);
   }
 
@@ -57,22 +65,30 @@ export class MatchesController {
   @ApiResponse({
     status: 200,
     description: 'Return the match with the given id',
+    type: MatchDto,
   })
   @Get(':id')
-  async findOne(@Param('id') id: string, @GetUser() user: User) {
-    return this.matchesService.findOne(id, user);
+  async findOne(
+    @Param('id') id: string,
+    @GetUser() user: User,
+  ): Promise<MatchDto> {
+    return this.matchesService.findOneMatch(id, user);
   }
 
   @ApiOperation({ summary: 'Update a match' })
   @ApiParam({ name: 'id', example: '1', description: 'The id of the match' })
   @ApiBody({ type: UpdateMatchDto })
-  @ApiResponse({ status: 200, description: 'Match successfully updated' })
+  @ApiResponse({
+    status: 200,
+    description: 'Match successfully updated',
+    type: MatchDto,
+  })
   @Patch(':id')
   update(
     @Param('id') id: string,
     @Body() updateMatchDto: UpdateMatchDto,
     @GetUser() user: User,
-  ) {
+  ): Promise<MatchDto> {
     return this.matchesService.update(id, updateMatchDto, user);
   }
 
@@ -80,7 +96,7 @@ export class MatchesController {
   @ApiParam({ name: 'id', example: '1', description: 'The id of the match' })
   @ApiResponse({ status: 204, description: 'Match successfully deleted' })
   @Delete(':id')
-  remove(@Param('id') id: string, @GetUser() user: User) {
+  remove(@Param('id') id: string, @GetUser() user: User): Promise<void> {
     return this.matchesService.remove(id, user);
   }
 }

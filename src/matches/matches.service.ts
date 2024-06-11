@@ -8,6 +8,9 @@ import { PlayersService } from 'src/players/players.service';
 import { User } from 'src/auth/user.entity';
 import { ResultsService } from 'src/results/results.service';
 import { MatchDto } from './dto/match.dto';
+import { SetsService } from 'src/sets/sets.service';
+import { MatchIdResponse } from './dto/match-id-response.dto';
+import { CreateSetDto } from 'src/sets/dto/create-set.dto';
 
 @Injectable()
 export class MatchesService {
@@ -18,20 +21,52 @@ export class MatchesService {
     private matchesRepository: MatchesRepository,
     private playersService: PlayersService,
     private resultsService: ResultsService,
+    private setsService: SetsService,
   ) {}
+
+  private async findOne(id: string, user: User): Promise<Match> {
+    const found = await this.matchesRepository.findOne({
+      where: { id, createdBy: user },
+      relations: ['result', 'homePlayer', 'awayPlayer', 'sets'],
+    });
+
+    if (!found) {
+      this.logger.debug(`Match with id: '${id}' not found`);
+      throw new NotFoundException(`Match with id: '${id}' not found`);
+    }
+
+    return found;
+  }
 
   private mapMatchToMatchDto(match: Match): MatchDto {
     return {
       id: match.id,
       date: match.date.toISOString(),
-      homePlayerFullName: `${match.homePlayer.firstName} ${match.homePlayer.lastName}`,
-      awayPlayerFullName: `${match.awayPlayer.firstName} ${match.awayPlayer.lastName}`,
+      homePlayer: {
+        id: match.homePlayer.id,
+        label: `${match.homePlayer.firstName} ${match.homePlayer.lastName}`,
+      },
+      awayPlayer: {
+        id: match.awayPlayer.id,
+        label: `${match.awayPlayer.firstName} ${match.awayPlayer.lastName}`,
+      },
       homePlayerSetsWon: match.result.homePlayerSetsWon,
       awayPlayerSetsWon: match.result.awayPlayerSetsWon,
+      sets: match.sets.map((set) => ({
+        id: set.id,
+        homePlayerPoints: set.homePlayerPoints,
+        awayPlayerPoints: set.awayPlayerPoints,
+      })),
     };
   }
 
-  async create(createMatchDto: CreateMatchDto, user: User): Promise<Match> {
+  /**
+   * Creates a new match.
+   */
+  async create(
+    createMatchDto: CreateMatchDto,
+    user: User,
+  ): Promise<MatchIdResponse> {
     this.logger.debug(`Creating a new match on ${createMatchDto.date}`);
     const {
       date,
@@ -39,6 +74,7 @@ export class MatchesService {
       awayPlayerId,
       homePlayerSetsWon,
       awayPlayerSetsWon,
+      sets,
     } = createMatchDto;
 
     const homePlayer = await this.playersService.findOne(homePlayerId, user);
@@ -54,6 +90,7 @@ export class MatchesService {
     const winner =
       homePlayerSetsWon > awayPlayerSetsWon ? homePlayer : awayPlayer;
 
+    // create ans save result
     await this.resultsService.create({
       match,
       homePlayerSetsWon,
@@ -61,13 +98,29 @@ export class MatchesService {
       winner,
     });
 
-    return match;
+    // create and save sets
+    if (Array.isArray(sets) && sets.length > 0) {
+      sets.forEach(async (set: CreateSetDto, i: number) => {
+        await this.setsService.create({
+          awayPlayerPoints: set.awayPlayerPoints,
+          homePlayerPoints: set.homePlayerPoints,
+          match,
+          setNumber: i,
+        });
+      });
+    }
+
+    return { id: match.id };
   }
 
+  /**
+   * Retrieves all matches created by a user sorted by date.
+   *
+   */
   async findAll(user: User): Promise<MatchDto[]> {
     const matches = await this.matchesRepository.find({
       where: { createdBy: user },
-      relations: ['result', 'homePlayer', 'awayPlayer'],
+      relations: ['result', 'homePlayer', 'awayPlayer', 'sets'],
     });
 
     return matches
@@ -75,43 +128,84 @@ export class MatchesService {
       .map((match): MatchDto => this.mapMatchToMatchDto(match));
   }
 
+  /**
+   * Finds and returns a single match created by a user by its ID.
+   *
+   */
   async findOneMatch(id: string, user: User): Promise<MatchDto> {
     const match = await this.findOne(id, user);
+
+    this.logger.debug(
+      `Match with id: '${id}' found, ${JSON.stringify(match.sets)}`,
+    );
 
     return this.mapMatchToMatchDto(match);
   }
 
-  async findOne(id: string, user: User): Promise<Match> {
-    const found = await this.matchesRepository.findOne({
-      where: { id, createdBy: user },
-      relations: ['result', 'homePlayer', 'awayPlayer'],
-    });
-
-    if (!found) {
-      this.logger.debug(`Match with id: '${id}' not found`);
-      throw new NotFoundException(`Match with id: '${id}' not found`);
-    }
-
-    this.logger.debug(`Match with id: '${id}' found ${JSON.stringify(found)}`);
-
-    // map to MatchDto
-    return found;
-  }
-
+  /**
+   * Updates a match with the provided data.
+   *
+   */
   async update(
     id: string,
     updateMatchDto: UpdateMatchDto,
     user: User,
   ): Promise<MatchDto> {
     const match = await this.findOne(id, user);
+    const existingSets =
+      (await this.setsService.findSetsByMatchId(match.id)) ?? [];
 
-    Object.assign(match, updateMatchDto);
+    Object.assign(match, {
+      date: new Date(updateMatchDto.date),
+      homePlayer:
+        updateMatchDto.homePlayerId &&
+        (await this.playersService.findOne(updateMatchDto.homePlayerId, user)),
+      awayPlayer:
+        updateMatchDto.awayPlayerId &&
+        (await this.playersService.findOne(updateMatchDto.awayPlayerId, user)),
+    });
 
     await this.matchesRepository.save(match);
 
-    return this.mapMatchToMatchDto(match);
+    updateMatchDto.sets.forEach(async (set, index) => {
+      const existingSet = existingSets.find((s) => s.id === set.id);
+      if (existingSet) {
+        this.setsService.update(set);
+        existingSets.splice(existingSets.indexOf(existingSet), 1);
+      } else {
+        await this.setsService.create({
+          awayPlayerPoints: set.awayPlayerPoints,
+          homePlayerPoints: set.homePlayerPoints,
+          match,
+          setNumber: index,
+        });
+      }
+    });
+
+    existingSets.forEach(async (set) => {
+      await this.setsService.remove(set.id);
+    });
+
+    const winner =
+      updateMatchDto.homePlayerSetsWon > updateMatchDto.awayPlayerSetsWon
+        ? match.homePlayer
+        : match.awayPlayer;
+
+    await this.resultsService.update(match.result.id, {
+      awayPlayerSetsWon: updateMatchDto.awayPlayerSetsWon,
+      homePlayerSetsWon: updateMatchDto.homePlayerSetsWon,
+      winner,
+    });
+
+    const updatedMatch = await this.findOne(id, user);
+
+    return this.mapMatchToMatchDto(updatedMatch);
   }
 
+  /**
+   * Deletes a match.
+   *
+   */
   async remove(id: string, user: User): Promise<void> {
     const result = await this.matchesRepository.softDelete({
       id,

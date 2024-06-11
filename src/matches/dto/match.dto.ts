@@ -1,19 +1,29 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { SetDto } from 'src/sets/dto/set.dto';
 export class MatchDto {
   @ApiProperty({ example: '1', description: 'The id of the match' })
   id: string;
   @ApiProperty({ example: '2021-09-01', description: 'The date of the match' })
   date: string;
+
   @ApiProperty({
-    example: 'John Doe',
-    description: 'The full name of the home player',
+    example: { id: '1', label: 'John Doe' },
+    description: 'The home player id and full name',
   })
-  homePlayerFullName: string;
+  homePlayer: {
+    id: string;
+    label: string;
+  };
+
   @ApiProperty({
-    example: 'Jane Doe',
-    description: 'The full name of the away player',
+    example: { id: '2', label: 'Jane Doe' },
+    description: 'The away player id and full name',
   })
-  awayPlayerFullName: string;
+  awayPlayer: {
+    id: string;
+    label: string;
+  };
+
   @ApiProperty({
     example: '3',
     description: 'The number of sets won by the home player',
@@ -24,4 +34,11 @@ export class MatchDto {
     description: 'The number of sets won by the away player',
   })
   awayPlayerSetsWon: number;
+
+  @ApiProperty({
+    type: SetDto,
+    isArray: true,
+    description: 'The sets played in the match',
+  })
+  sets: SetDto[];
 }

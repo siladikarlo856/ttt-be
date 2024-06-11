@@ -7,12 +7,14 @@ import { MatchesRepository } from './matches.repository';
 import { PlayersModule } from 'src/players/players.module';
 import { AuthModule } from 'src/auth/auth.module';
 import { ResultsModule } from 'src/results/results.module';
+import { SetsModule } from 'src/sets/sets.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Match]),
     PlayersModule,
     ResultsModule,
+    SetsModule,
     forwardRef(() => AuthModule),
   ],
   controllers: [MatchesController],

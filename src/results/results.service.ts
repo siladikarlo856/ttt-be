@@ -16,7 +16,7 @@ export class ResultsService {
 
   async create(createResultDto: CreateResultDto): Promise<Result> {
     this.logger.debug(
-      `Creating a new result: ${JSON.stringify(createResultDto)}`,
+      `Creating a new result for match:${createResultDto.match.id}}`,
     );
     return this.resultsRepository.createResult(createResultDto);
   }
@@ -28,7 +28,10 @@ export class ResultsService {
 
   async findOne(id: string): Promise<Result> {
     this.logger.debug(`Retrieving result with id: ${id}`);
-    const found = await this.resultsRepository.findOne({ where: { id } });
+    const found = await this.resultsRepository.findOne({
+      where: { id },
+      relations: ['winner'],
+    });
 
     if (!found) {
       throw new NotFoundException(`Result with id: '${id}' not found`);
@@ -38,7 +41,6 @@ export class ResultsService {
   }
 
   async update(id: string, updateResultsDto: UpdateResultDto): Promise<Result> {
-    this.logger.debug(`Updating result with id: ${id}`);
     const result = await this.findOne(id);
 
     Object.assign(result, updateResultsDto);
