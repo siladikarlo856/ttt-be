@@ -15,7 +15,7 @@ jobs:
 
       - name: Login to ECR
         id: ecr-login
-        uses: jwalton/gh-ecr-login@v2
+        uses: jwalton/gh-ecr-login@v3
         with:
           access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -23,7 +23,7 @@ jobs:
 
       - name: Push to ECR
         id: ecr-push
-        uses: jwalton/gh-ecr-push@v3
+        uses: jwalton/gh-ecr-push@v2
         with:
           access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
