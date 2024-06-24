@@ -90,7 +90,8 @@ jobs:
                 aws ecr get-login-password --region $REGION | docker login --username AWS --password-stdin $REGISTRY; \
                 docker pull $REGISTRY/$REPOSITORY:latest; \
                 cd /home/ubuntu/ttt-api/docker/; \
-                env VERSION=production env REGISTRY=$REGISTRY env REPOSITORY=$REPOSITORY docker-compose up -d;"
+                env VERSION=production env REGISTRY=$REGISTRY env REPOSITORY=$REPOSITORY docker-compose up -d; \
+                docker image prune -f; \"
             else
               echo "No public DNS found for the instance with ID: $instance"
               exit 1000
