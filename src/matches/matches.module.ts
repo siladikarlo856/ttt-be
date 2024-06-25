@@ -19,5 +19,6 @@ import { SetsModule } from 'src/sets/sets.module';
   ],
   controllers: [MatchesController],
   providers: [MatchesService, MatchesRepository],
+  exports: [MatchesService],
 })
 export class MatchesModule {}

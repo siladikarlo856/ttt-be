@@ -7,6 +7,7 @@ import { PrefixNamingStrategy } from './common/strategies/entity-naming.strategy
 import { PlayersModule } from './players/players.module';
 import { ResultsModule } from './results/results.module';
 import { MatchesModule } from './matches/matches.module';
+import { StatisticsModule } from './statistics/statistics.module';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { MatchesModule } from './matches/matches.module';
     PlayersModule,
     ResultsModule,
     MatchesModule,
+    StatisticsModule,
   ],
   controllers: [],
   providers: [],

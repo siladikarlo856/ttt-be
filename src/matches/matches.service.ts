@@ -217,4 +217,22 @@ export class MatchesService {
       throw new NotFoundException(`Match with id: '${id}' not found`);
     }
   }
+
+  async getDistinctYears(user: User): Promise<number[]> {
+    const matches = await this.matchesRepository.find({
+      where: { createdBy: user },
+    });
+
+    function getDistinctYears(dates: Date[]): number[] {
+      const years = dates.map((date) => date.getFullYear());
+      const distinctYears = [...new Set(years)];
+      return distinctYears;
+    }
+
+    const distinctYears = getDistinctYears(matches.map((m) => m.date)).sort(
+      (a, b) => b - a,
+    );
+
+    return distinctYears;
+  }
 }
