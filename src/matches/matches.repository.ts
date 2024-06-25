@@ -3,6 +3,8 @@ import { DataSource, Repository } from 'typeorm';
 import { Match } from './entities/match.entity';
 import { Player } from 'src/players/entities/player.entity';
 import { User } from 'src/auth/user.entity';
+import { GetMatchesFilterDto } from './dto/get-matches-filter.dto';
+import { Result } from 'src/results/entities/result.entity';
 
 @Injectable()
 export class MatchesRepository extends Repository<Match> {
@@ -32,5 +34,26 @@ export class MatchesRepository extends Repository<Match> {
     await this.save(match);
 
     return match;
+  }
+
+  async getMatches(
+    filterDto: GetMatchesFilterDto,
+    user: User,
+  ): Promise<Match[]> {
+    const { year } = filterDto;
+
+    const query = this.createQueryBuilder('match')
+      .leftJoinAndSelect('match.result', 'result')
+      .leftJoinAndSelect('match.homePlayer', 'homePlayer')
+      .leftJoinAndSelect('match.awayPlayer', 'awayPlayer')
+      .leftJoinAndSelect('match.sets', 'sets')
+      .where('match.createdBy = :userId', { userId: user.id })
+      .orderBy('match.date', 'DESC');
+
+    if (year) {
+      query.andWhere('EXTRACT(YEAR FROM match.date) = :year', { year });
+    }
+
+    return query.getMany();
   }
 }

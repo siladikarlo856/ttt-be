@@ -11,6 +11,7 @@ import { MatchDto } from './dto/match.dto';
 import { SetsService } from 'src/sets/sets.service';
 import { MatchIdResponse } from './dto/match-id-response.dto';
 import { CreateSetDto } from 'src/sets/dto/create-set.dto';
+import { GetMatchesFilterDto } from './dto/get-matches-filter.dto';
 
 @Injectable()
 export class MatchesService {
@@ -117,15 +118,10 @@ export class MatchesService {
    * Retrieves all matches created by a user sorted by date.
    *
    */
-  async findAll(user: User): Promise<MatchDto[]> {
-    const matches = await this.matchesRepository.find({
-      where: { createdBy: user },
-      relations: ['result', 'homePlayer', 'awayPlayer', 'sets'],
-    });
+  async findAll(filter: GetMatchesFilterDto, user: User): Promise<MatchDto[]> {
+    const matches = await this.matchesRepository.getMatches(filter, user);
 
-    return matches
-      .sort((a, b) => b.date.getTime() - a.date.getTime())
-      .map((match): MatchDto => this.mapMatchToMatchDto(match));
+    return matches.map((match): MatchDto => this.mapMatchToMatchDto(match));
   }
 
   /**

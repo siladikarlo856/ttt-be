@@ -8,6 +8,7 @@ import {
   Delete,
   UseGuards,
   Logger,
+  Query,
 } from '@nestjs/common';
 import { MatchesService } from './matches.service';
 import { CreateMatchDto } from './dto/create-match.dto';
@@ -24,6 +25,7 @@ import {
 } from '@nestjs/swagger';
 import { MatchDto } from './dto/match.dto';
 import { MatchIdResponse } from './dto/match-id-response.dto';
+import { GetMatchesFilterDto } from './dto/get-matches-filter.dto';
 
 @ApiTags('matches')
 @Controller('matches')
@@ -56,8 +58,14 @@ export class MatchesController {
     isArray: true,
   })
   @Get()
-  findAll(@GetUser() user: User): Promise<MatchDto[]> {
-    return this.matchesService.findAll(user);
+  findAll(
+    @Query() filterDto: GetMatchesFilterDto,
+    @GetUser() user: User,
+  ): Promise<MatchDto[]> {
+    this.logger.verbose(
+      `User "${user.email}" retrieving all matches. Filters: ${JSON.stringify(filterDto)}`,
+    );
+    return this.matchesService.findAll(filterDto, user);
   }
 
   @ApiOperation({ summary: 'Get a match by id' })
