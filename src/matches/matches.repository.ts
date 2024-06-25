@@ -4,7 +4,6 @@ import { Match } from './entities/match.entity';
 import { Player } from 'src/players/entities/player.entity';
 import { User } from 'src/auth/user.entity';
 import { GetMatchesFilterDto } from './dto/get-matches-filter.dto';
-import { Result } from 'src/results/entities/result.entity';
 
 @Injectable()
 export class MatchesRepository extends Repository<Match> {
@@ -44,6 +43,7 @@ export class MatchesRepository extends Repository<Match> {
 
     const query = this.createQueryBuilder('match')
       .leftJoinAndSelect('match.result', 'result')
+      .leftJoinAndSelect('result.winner', 'winner')
       .leftJoinAndSelect('match.homePlayer', 'homePlayer')
       .leftJoinAndSelect('match.awayPlayer', 'awayPlayer')
       .leftJoinAndSelect('match.sets', 'sets')
@@ -55,5 +55,15 @@ export class MatchesRepository extends Repository<Match> {
     }
 
     return query.getMany();
+  }
+
+  async getMatchesByDate(startDate: Date, user: User): Promise<Match[]> {
+    return this.createQueryBuilder('match')
+      .leftJoinAndSelect('match.result', 'result')
+      .leftJoinAndSelect('result.winner', 'winner')
+      .where('match.createdBy = :userId', { userId: user.id })
+      .andWhere('match.date >= :startDate', { startDate })
+      .orderBy('match.date', 'DESC')
+      .getMany();
   }
 }

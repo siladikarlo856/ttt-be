@@ -21,10 +21,13 @@ export class PlayersService {
   }
 
   async findAll(user: User): Promise<SelectOption[]> {
-    const players = await this.playersRepository.find({
-      where: { createdBy: user },
-      relations: ['user'],
-    });
+    this.logger.verbose(
+      `Retrieving all players for user: ${JSON.stringify(user)}`,
+    );
+    const players = await this.playersRepository
+      .createQueryBuilder('player')
+      .where('player.createdBy = :userId', { userId: user.id })
+      .getMany();
 
     return players.map((player) => ({
       value: player.id,
@@ -33,9 +36,11 @@ export class PlayersService {
   }
 
   async findOne(id: string, user: User): Promise<Player> {
-    const found = await this.playersRepository.findOne({
-      where: { id, createdBy: user },
-    });
+    const found = await this.playersRepository
+      .createQueryBuilder('player')
+      .where('player.id = :id', { id })
+      .where('player.createdBy = :userId', { userId: user.id })
+      .getOne();
 
     if (!found) {
       throw new NotFoundException(`Player with id: '${id}' not found`);

@@ -27,7 +27,6 @@ export class ResultsService {
   }
 
   async findOne(id: string): Promise<Result> {
-    this.logger.debug(`Retrieving result with id: ${id}`);
     const found = await this.resultsRepository.findOne({
       where: { id },
       relations: ['winner'],
@@ -59,10 +58,7 @@ export class ResultsService {
     }
   }
 
-  async findResultByMatchId(matchId: string): Promise<Result> {
-    this.logger.debug(`Retrieving results for match with id: ${matchId}`);
-    return this.resultsRepository.findOne({
-      where: { match: { id: matchId } },
-    });
+  async findOneByMatchId(matchId: string): Promise<Result> {
+    return this.resultsRepository.findOneByMatchId(matchId);
   }
 }

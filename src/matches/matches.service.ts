@@ -12,6 +12,7 @@ import { SetsService } from 'src/sets/sets.service';
 import { MatchIdResponse } from './dto/match-id-response.dto';
 import { CreateSetDto } from 'src/sets/dto/create-set.dto';
 import { GetMatchesFilterDto } from './dto/get-matches-filter.dto';
+import { DataSource } from 'typeorm';
 
 @Injectable()
 export class MatchesService {
@@ -23,6 +24,7 @@ export class MatchesService {
     private playersService: PlayersService,
     private resultsService: ResultsService,
     private setsService: SetsService,
+    private dataSource: DataSource,
   ) {}
 
   private async findOne(id: string, user: User): Promise<Match> {
@@ -68,7 +70,9 @@ export class MatchesService {
     createMatchDto: CreateMatchDto,
     user: User,
   ): Promise<MatchIdResponse> {
-    this.logger.debug(`Creating a new match on ${createMatchDto.date}`);
+    this.logger.verbose(
+      `Creating a new match played on ${createMatchDto.date}`,
+    );
     const {
       date,
       homePlayerId,
@@ -215,9 +219,10 @@ export class MatchesService {
   }
 
   async getDistinctYears(user: User): Promise<number[]> {
-    const matches = await this.matchesRepository.find({
-      where: { createdBy: user },
-    });
+    const matches = await this.matchesRepository
+      .createQueryBuilder('match')
+      .where('match.createdBy = :userId', { userId: user.id })
+      .getMany();
 
     function getDistinctYears(dates: Date[]): number[] {
       const years = dates.map((date) => date.getFullYear());
@@ -230,5 +235,14 @@ export class MatchesService {
     );
 
     return distinctYears;
+  }
+
+  async getAllMatchesAfterDate(startDate: Date, user: User): Promise<Match[]> {
+    const matches = await this.matchesRepository.getMatchesByDate(
+      startDate,
+      user,
+    );
+
+    return matches;
   }
 }

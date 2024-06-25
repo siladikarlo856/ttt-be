@@ -1,5 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 
+export type StreakType = 'win' | 'loss';
+
 export interface SelectOption<T = any> {
   value: T;
   label: string;

@@ -2,7 +2,7 @@ import { Exclude, Expose } from 'class-transformer';
 import { BaseEntity } from 'src/common/entities/base.entity';
 import { Match } from 'src/matches/entities/match.entity';
 import { Player } from 'src/players/entities/player.entity';
-import { Column, Entity, JoinColumn, OneToOne } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, OneToOne } from 'typeorm';
 
 @Entity('results')
 export class Result extends BaseEntity {
@@ -12,7 +12,7 @@ export class Result extends BaseEntity {
   @Column()
   awayPlayerSetsWon: number;
 
-  @OneToOne(() => Player, (player) => player.id, { eager: false })
+  @ManyToOne(() => Player, (player) => player.id, { eager: false })
   @Exclude({ toPlainOnly: true })
   @JoinColumn()
   winner: Player;
