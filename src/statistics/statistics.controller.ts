@@ -1,4 +1,4 @@
-import { Body, Controller, Get, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
 import { StatisticsService } from './statistics.service';
 import { SelectOption, SelectOptionModel } from 'src/types';
 import { GetUser } from 'src/auth/get-user.decorator';
@@ -14,7 +14,7 @@ import { GetStatisticsParams } from './dto/get-statistics.dto';
 export class StatisticsController {
   constructor(private readonly statisticsService: StatisticsService) {}
 
-  @Get()
+  @Post()
   getStatistics(
     @Body() getStatisticsParams: GetStatisticsParams,
     @GetUser() user: User,

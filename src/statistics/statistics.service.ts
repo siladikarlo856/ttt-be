@@ -22,14 +22,16 @@ export class StatisticsService {
       )}`,
     );
 
-    const { startDate } = getStatisticsParams;
+    const { startDate, opponents } = getStatisticsParams;
 
-    const startDateDate = new Date(startDate);
-
-    const matches = await this.matchesService.getAllMatchesAfterDate(
-      startDateDate,
+    let matches = await this.matchesService.getAllMatchesAfterDate(
+      new Date(startDate),
       user,
     );
+
+    if (opponents.length) {
+      matches = matches.filter((m) => opponents.includes(m.awayPlayerId));
+    }
 
     if (matches.length === 0) {
       return {
@@ -39,7 +41,7 @@ export class StatisticsService {
         currentStreak: {
           type: 'loss',
           length: 0,
-          startDate: new Date().toISOString(),
+          startDate: '',
         },
       };
     }

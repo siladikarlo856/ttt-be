@@ -39,7 +39,7 @@ export class PlayersService {
     const found = await this.playersRepository
       .createQueryBuilder('player')
       .where('player.id = :id', { id })
-      .where('player.createdBy = :userId', { userId: user.id })
+      .andWhere('player.createdBy = :userId', { userId: user.id })
       .getOne();
 
     if (!found) {

@@ -39,7 +39,7 @@ export class MatchesRepository extends Repository<Match> {
     filterDto: GetMatchesFilterDto,
     user: User,
   ): Promise<Match[]> {
-    const { year } = filterDto;
+    const { year, opponents } = filterDto;
 
     const query = this.createQueryBuilder('match')
       .leftJoinAndSelect('match.result', 'result')
@@ -52,6 +52,14 @@ export class MatchesRepository extends Repository<Match> {
 
     if (year) {
       query.andWhere('EXTRACT(YEAR FROM match.date) = :year', { year });
+    }
+
+    if (opponents !== undefined) {
+      const opponentsArr =
+        typeof opponents === 'string' ? [opponents] : opponents;
+      query.andWhere('match.awayPlayerId IN (:...opponentsArr)', {
+        opponentsArr,
+      });
     }
 
     return query.getMany();

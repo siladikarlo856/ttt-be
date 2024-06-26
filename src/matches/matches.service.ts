@@ -85,6 +85,9 @@ export class MatchesService {
     const homePlayer = await this.playersService.findOne(homePlayerId, user);
     const awayPlayer = await this.playersService.findOne(awayPlayerId, user);
 
+    this.logger.verbose(`Home player: ${JSON.stringify(homePlayer)}`);
+    this.logger.verbose(`Away player: ${JSON.stringify(awayPlayer)}`);
+
     const match = await this.matchesRepository.createMatch(
       new Date(date),
       homePlayer,
