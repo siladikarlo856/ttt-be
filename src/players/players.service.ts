@@ -6,6 +6,7 @@ import { PlayersRepository } from './players.repository';
 import { User } from 'src/auth/user.entity';
 import { Player } from './entities/player.entity';
 import { SelectOption } from 'src/types';
+import { string } from '@hapi/joi';
 
 @Injectable()
 export class PlayersService {
@@ -43,6 +44,7 @@ export class PlayersService {
       .getOne();
 
     if (!found) {
+      this.logger.debug(`Player with id: '${id}' not found`);
       throw new NotFoundException(`Player with id: '${id}' not found`);
     }
 
@@ -73,5 +75,21 @@ export class PlayersService {
       this.logger.debug(`Player with id: '${id}' not found`);
       throw new NotFoundException(`Player with id: '${id}' not found`);
     }
+  }
+
+  async updatePlayerWithUser({ id }: Player, user: User): Promise<Player> {
+    const player = await this.playersRepository
+      .createQueryBuilder('player')
+      .where('player.id = :id', { id })
+      .getOne();
+
+    if (!player) {
+      this.logger.debug(`Player with id: '${player.id}' not found`);
+      throw new NotFoundException(`Player with id: '${id}' not found`);
+    }
+
+    await this.playersRepository.update(id, { createdBy: user });
+
+    return player;
   }
 }

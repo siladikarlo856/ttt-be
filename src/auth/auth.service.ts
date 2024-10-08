@@ -49,9 +49,11 @@ export class AuthService {
     });
 
     try {
-      const createdUser = await this.usersRepository.save(user);
-      player.createdBy = createdUser;
-      await this.playersService.update(player.id, player, null);
+      const savedUser = await this.usersRepository.save(user);
+      this.logger.debug(
+        `User '${JSON.stringify(savedUser)}' successfully created`,
+      );
+      await this.playersService.updatePlayerWithUser(player, user);
       this.logger.debug(`User '${email}' successfully created`);
     } catch (error) {
       if (error.code === UserErrors.DUPLICATE_USERNAME) {
