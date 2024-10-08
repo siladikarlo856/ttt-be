@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { SetDto } from 'src/sets/dto/set.dto';
+import { MatchType } from 'src/types';
 export class MatchDto {
   @ApiProperty({ example: '1', description: 'The id of the match' })
   id: string;
@@ -41,4 +42,11 @@ export class MatchDto {
     description: 'The sets played in the match',
   })
   sets: SetDto[];
+
+  @ApiProperty({
+    example: MatchType.FRIENDLY,
+    description: 'The type of the match',
+    enum: MatchType,
+  })
+  type: MatchType;
 }

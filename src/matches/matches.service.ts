@@ -65,6 +65,7 @@ export class MatchesService {
         homePlayerPoints: set.homePlayerPoints,
         awayPlayerPoints: set.awayPlayerPoints,
       })),
+      type: match.type,
     };
   }
 
@@ -80,6 +81,7 @@ export class MatchesService {
     );
     const {
       date,
+      type,
       homePlayerId,
       awayPlayerId,
       homePlayerSetsWon,
@@ -94,9 +96,7 @@ export class MatchesService {
     this.logger.verbose(`Away player: ${JSON.stringify(awayPlayer)}`);
 
     const match = await this.matchesRepository.createMatch(
-      new Date(date),
-      homePlayer,
-      awayPlayer,
+      { date: new Date(date), type, homePlayer, awayPlayer },
       user,
     );
 
@@ -171,6 +171,7 @@ export class MatchesService {
       awayPlayer:
         updateMatchDto.awayPlayerId &&
         (await this.playersService.findOne(updateMatchDto.awayPlayerId, user)),
+      type: updateMatchDto.type,
     });
 
     await this.matchesRepository.save(match);

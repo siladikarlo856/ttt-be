@@ -4,6 +4,7 @@ import { BaseEntity } from 'src/common/entities/base.entity';
 import { Player } from 'src/players/entities/player.entity';
 import { Result } from 'src/results/entities/result.entity';
 import { Set } from 'src/sets/entities/set.entity';
+import { MatchType } from 'src/types';
 import {
   Column,
   Entity,
@@ -41,4 +42,11 @@ export class Match extends BaseEntity {
 
   @OneToMany(() => Set, (set) => set.match, { eager: false })
   sets: Set[];
+
+  @Column({
+    type: 'enum',
+    enum: MatchType,
+    default: MatchType.FRIENDLY,
+  })
+  type: MatchType;
 }

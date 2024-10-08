@@ -17,3 +17,9 @@ export class SelectOptionModel<T = any> {
   })
   label: string;
 }
+
+export enum MatchType {
+  FRIENDLY = 'friendly',
+  TOURNAMENT = 'tournament',
+  LEAGUE = 'league',
+}

@@ -3,6 +3,7 @@ import { IsDateString, IsInt, IsNotEmpty, IsUUID, Min } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ValidateNested } from 'class-validator';
 import { CreateSetDto } from 'src/sets/dto/create-set.dto';
+import { MatchType } from 'src/types';
 
 export class CreateMatchDto {
   @ApiProperty({ example: '2021-09-01', description: 'The date of the match' })
@@ -44,4 +45,11 @@ export class CreateMatchDto {
   @ValidateNested({ each: true })
   @Type(() => CreateSetDto)
   sets?: CreateSetDto[];
+
+  @ApiProperty({
+    example: MatchType.FRIENDLY,
+    description: 'The type of the match',
+    enum: MatchType,
+  })
+  type: MatchType;
 }

@@ -4,6 +4,7 @@ import { Match } from './entities/match.entity';
 import { Player } from 'src/players/entities/player.entity';
 import { User } from 'src/auth/user.entity';
 import { GetMatchesFilterDto } from './dto/get-matches-filter.dto';
+import { MatchType } from 'src/types';
 
 @Injectable()
 export class MatchesRepository extends Repository<Match> {
@@ -14,9 +15,17 @@ export class MatchesRepository extends Repository<Match> {
   }
 
   async createMatch(
-    date: Date,
-    homePlayer: Player,
-    awayPlayer: Player,
+    {
+      date,
+      homePlayer,
+      awayPlayer,
+      type,
+    }: {
+      date: Date;
+      homePlayer: Player;
+      awayPlayer: Player;
+      type: MatchType;
+    },
     user: User,
   ): Promise<Match> {
     this.logger.debug(
@@ -25,6 +34,7 @@ export class MatchesRepository extends Repository<Match> {
 
     const match = this.create({
       date,
+      type,
       homePlayer,
       awayPlayer,
       createdBy: user,
