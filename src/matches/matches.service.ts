@@ -28,10 +28,15 @@ export class MatchesService {
   ) {}
 
   private async findOne(id: string, user: User): Promise<Match> {
-    const found = await this.matchesRepository.findOne({
-      where: { id, createdBy: user },
-      relations: ['result', 'homePlayer', 'awayPlayer', 'sets'],
-    });
+    const found = await this.matchesRepository
+      .createQueryBuilder('match')
+      .leftJoinAndSelect('match.result', 'result')
+      .leftJoinAndSelect('match.homePlayer', 'homePlayer')
+      .leftJoinAndSelect('match.awayPlayer', 'awayPlayer')
+      .leftJoinAndSelect('match.sets', 'sets')
+      .where('match.id = :id', { id })
+      .andWhere('match.createdBy = :userId', { userId: user.id })
+      .getOne();
 
     if (!found) {
       this.logger.debug(`Match with id: '${id}' not found`);
