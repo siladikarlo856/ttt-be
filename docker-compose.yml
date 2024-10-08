@@ -4,7 +4,7 @@ services:
     build:
       dockerfile: Dockerfile
       context: .
-    container_name: template-api
+    container_name: ttt-api
     depends_on:
       - postgres
     environment:
@@ -26,7 +26,7 @@ services:
       - ttt-network
 
   postgres:
-    container_name: template-postgres
+    container_name: ttt-postgres
     image: postgres:13
     restart: unless-stopped
     ports:
