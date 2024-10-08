@@ -6,7 +6,6 @@ import { PlayersRepository } from './players.repository';
 import { User } from 'src/auth/user.entity';
 import { Player } from './entities/player.entity';
 import { SelectOption } from 'src/types';
-import { string } from '@hapi/joi';
 
 @Injectable()
 export class PlayersService {
